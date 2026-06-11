@@ -1,0 +1,32 @@
+{% load college %}
+<div class="card">
+  <h3>Employment</h3>
+  <table>
+    <tr><th>Position</th><th>Department</th><th>Funded by (GL)</th><th>Status</th><th>Hired</th><th class="num">Salary</th></tr>
+    {% for r in records %}
+    <tr>
+      <td>{{ r.position.title }} <span class="muted small">{{ r.position.position_number }}</span>
+        {% with n=r|pending_crs %}{% if n %}<span class="badge badge-warn">change pending HR approval</span>{% endif %}{% endwith %}</td>
+      <td>{{ r.position.department.code }}</td>
+      <td class="small">{{ r.position.gl_account|default:"—" }}</td>
+      <td><span class="badge {{ r.status|status_class }}">{{ r.get_status_display }}</span></td>
+      <td>{{ r.hire_date }}</td>
+      <td class="num">{% if salary_visible %}{{ r.salary|money }}{% else %}•••{% endif %}</td>
+    </tr>
+    {% empty %}<tr><td colspan="6" class="empty">No employment records.</td></tr>{% endfor %}
+  </table>
+  <p class="mt"><a href="{% url 'hr_employee' person.pk %}">Full employee file</a></p>
+</div>
+{% if paychecks %}
+<div class="card">
+  <h3>Recent paychecks</h3>
+  <table>
+    <tr><th>Pay date</th><th class="num">Gross</th><th class="num">Net</th></tr>
+    {% for p in paychecks %}
+    <tr><td>{{ p.payroll_run.pay_date }}</td>
+        <td class="num">{% if salary_visible %}{{ p.gross|money }}{% else %}•••{% endif %}</td>
+        <td class="num">{% if salary_visible %}{{ p.net|money }}{% else %}•••{% endif %}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}

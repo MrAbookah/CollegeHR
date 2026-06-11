@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Aid package — {{ person.display_name }} — CollegeDB{% endblock %}
+{% block content %}
+<h1>Aid package — <a href="{% url 'person_detail' person.pk %}">{{ person.display_name }}</a></h1>
+
+<div class="grid cols-2">
+  <div class="card">
+    <h2>Awards</h2>
+    {% for a in awards %}
+    <div class="card">
+      <strong>{{ a.program.name }}</strong> · {{ a.aid_year.code }}
+      <span class="badge {{ a.status|status_class }}">{{ a.get_status_display }}</span><br>
+      <span class="small">Offered {{ a.amount_offered|money }}{% if a.amount_accepted %} · accepted {{ a.amount_accepted|money }}{% endif %}</span>
+      {% if a.status == "OFFERED" and can_edit %}
+      <form class="inline" method="post" action="{% url 'award_respond' a.pk %}">{% csrf_token %}
+        <button class="btn small good" name="decision" value="accept">Record acceptance</button>
+        <button class="btn small danger" name="decision" value="decline">Decline</button>
+      </form>
+      {% endif %}
+      {% for d in a.disbursements.all %}
+        <p class="small mt">{{ d.term.code }}: {{ d.amount|money }}
+          <span class="badge {{ d.status|status_class }}">{{ d.get_status_display }}</span>
+          {% if d.status == "SCHEDULED" and can_edit %}
+          <form class="inline" method="post" action="{% url 'disburse' d.pk %}">{% csrf_token %}
+            <button class="btn small">Disburse → bursar ledger</button>
+          </form>
+          {% endif %}
+        </p>
+      {% endfor %}
+    </div>
+    {% empty %}<p class="empty">No awards packaged.</p>{% endfor %}
+  </div>
+
+  <div class="card">
+    <h2>Offer a new award</h2>
+    {% if can_edit %}
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="btn">Offer award</button>
+    </form>
+    <p class="muted small mt">Disbursing posts the credit to the student's bursar ledger in the
+      same transaction — if it clears their balance, the bursar hold releases itself.</p>
+    {% else %}
+    <p class="muted">Only Financial Aid packages awards.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

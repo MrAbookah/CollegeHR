@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Possible duplicates — CollegeDB{% endblock %}
+{% block content %}
+<h1>Hold on — this person may already exist</h1>
+<div class="banner hold">
+  Duplicate records are how data gets lost between departments. Check these matches before creating.
+</div>
+
+<div class="card">
+  <table>
+    <tr><th>Match</th><th>Why flagged</th><th>College ID</th><th>Roles</th><th></th></tr>
+    {% for c in candidates %}
+    <tr>
+      <td><a href="{% url 'person_detail' c.person.pk %}">{{ c.person.display_name }}</a>
+          <span class="muted small">({{ c.person.date_of_birth|default:"DOB unknown" }})</span></td>
+      <td>{% for r in c.reasons %}<span class="badge badge-warn">{{ r }}</span> {% endfor %}</td>
+      <td class="cid">{{ c.person.college_id }}</td>
+      <td>{% for a in c.person.active_affiliations %}<span class="badge badge-role">{{ a.get_type_display }}</span>{% endfor %}</td>
+      <td><a class="btn small good" href="{% url 'person_detail' c.person.pk %}">Use this record</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>None of these? Create anyway</h2>
+  <form method="post" action="{% url 'person_create' %}">
+    {% csrf_token %}
+    <input type="hidden" name="search_token" value="{{ search_token }}">
+    <input type="hidden" name="force" value="1">
+    {{ form.as_p }}
+    <p><label>Justification (required — goes in the audit log)</label>
+      <input type="text" name="justification" placeholder="e.g. different DOB confirmed by ID, twins"></p>
+    <button class="btn danger">Create despite possible duplicates</button>
+  </form>
+</div>
+{% endblock %}

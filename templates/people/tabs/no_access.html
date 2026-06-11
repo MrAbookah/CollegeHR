@@ -1,0 +1,4 @@
+<div class="card">
+  <p class="muted">🔒 Your department doesn't have access to this slice of {{ person.display_name }}'s record.
+  If you need something from it, <a href="{% url 'task_new' %}?person={{ person.pk }}">send the owning office a referral</a>.</p>
+</div>

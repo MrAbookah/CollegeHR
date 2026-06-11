@@ -1,0 +1,18 @@
+{% load college %}
+<div class="card">
+  <h3>Applications</h3>
+  <table>
+    <tr><th>Term</th><th>Program</th><th>Stage</th><th>Source</th><th></th></tr>
+    {% for app in applications %}
+    <tr>
+      <td>{{ app.term.code }}</td><td>{{ app.program.code }}</td>
+      <td><span class="badge {{ app.stage|status_class }}">{{ app.get_stage_display }}</span></td>
+      <td>{{ app.get_source_display }}</td>
+      <td><a href="{% url 'application_detail' app.pk %}">Open</a></td>
+    </tr>
+    {% empty %}<tr><td colspan="5" class="empty">No applications.</td></tr>{% endfor %}
+  </table>
+  {% if "ADM" in my_dept_codes %}
+  <p class="mt"><a class="btn small" href="{% url 'application_create' person.pk %}">Open new application</a></p>
+  {% endif %}
+</div>

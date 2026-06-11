@@ -1,0 +1,15 @@
+# Dev database only — run the app on the host with `python manage.py runserver`.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: collegedb
+      POSTGRES_PASSWORD: collegedb
+      POSTGRES_DB: collegedb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

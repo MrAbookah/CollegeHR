@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Sections — CollegeDB{% endblock %}
+{% block content %}
+<h1>Sections — {{ term.name }}</h1>
+<form method="get" class="no-print row">
+  <p><label>Term</label>
+    <select name="term" onchange="this.form.submit()">
+      {% for t in terms %}<option value="{{ t.code }}" {% if t == term %}selected{% endif %}>{{ t.name }}</option>{% endfor %}
+    </select></p>
+</form>
+<div class="card">
+  <table>
+    <tr><th>Section</th><th>Title</th><th>Instructor</th><th>Schedule</th><th>Seats</th><th>Status</th></tr>
+    {% for s in sections %}
+    <tr>
+      <td><a href="{% url 'section_detail' s.pk %}">{{ s.course.code }}-{{ s.section_number }}</a></td>
+      <td>{{ s.course.title|truncatechars:45 }}</td>
+      <td>{{ s.instructor.display_name|default:"TBA" }}</td>
+      <td>{{ s.schedule_display }}</td>
+      <td>
+        <div class="progress" title="{{ s.seats_taken }}/{{ s.capacity }}">
+          {% widthratio s.seats_taken s.capacity 100 as pct %}
+          <span style="width:{{ pct }}%"></span>
+        </div>
+        <span class="muted small">{{ s.seats_taken }}/{{ s.capacity }}</span>
+      </td>
+      <td><span class="badge badge-muted">{{ s.get_status_display }}</span></td>
+    </tr>
+    {% empty %}<tr><td colspan="6" class="empty">No sections this term.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}

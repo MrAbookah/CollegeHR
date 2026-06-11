@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}{{ person.display_name }} — CollegeDB{% endblock %}
+{% block content %}
+<div class="person-head">
+  <h1>{{ person.display_name }}</h1>
+  <span class="cid">{{ person.college_id }}</span>
+  {% for a in active_affiliations %}<span class="badge badge-role">{{ a.get_type_display }}</span>{% endfor %}
+  {% if person.deceased %}<span class="badge badge-bad">Deceased</span>{% endif %}
+</div>
+<p class="muted small">
+  {{ person.primary_email|default:"no email" }} · {{ person.primary_phone|default:"no phone" }}
+  {% if person.pronouns %} · {{ person.pronouns }}{% endif %}
+  {% with n=person|pending_crs %}{% if n %} · <span class="badge badge-warn">{{ n }} unverified change{{ n|pluralize }}</span>{% endif %}{% endwith %}
+</p>
+
+{% if person.directory_optout %}
+<div class="banner ferpa">FERPA: this person opted out of directory information. Do not confirm
+  their enrollment or any details to outside callers.</div>
+{% endif %}
+
+{% if active_holds %}
+<div class="banner hold">
+  <strong>Active holds:</strong>
+  {% for hold in active_holds %}
+    {{ hold.hold_type.name }}{% if hold.amount %} ({{ hold.amount|money }}){% endif %}
+    — blocks {{ hold.hold_type.blocks_summary }} — contact {{ hold.hold_type.owning_department.name }}{% if not forloop.last %}; {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+
+<p class="no-print">
+  <a class="btn small secondary" href="{% url 'person_bio_edit' person.pk %}">Edit bio/contact</a>
+  <a class="btn small secondary" href="{% url 'task_new' %}?person={{ person.pk }}">Refer to another office</a>
+  <a class="btn small secondary" href="{% url 'hold_new' %}?person={{ person.pk }}">Place hold</a>
+  <a class="btn small secondary" href="{% url 'document_upload' %}?person={{ person.pk }}">Upload document</a>
+</p>
+
+<div class="tabs">
+  {% for tab in tabs %}
+    {% if tab.allowed %}
+      <a href="#{{ tab.key }}" data-tab="{{ tab.key }}" data-url="{% url 'person_tab' person.pk tab.key %}">{{ tab.label }}</a>
+    {% else %}
+      <a class="disabled" title="Your department doesn't have access">{{ tab.label }} 🔒</a>
+    {% endif %}
+  {% endfor %}
+</div>
+<div id="tab-panel"><p class="muted">Loading…</p></div>
+{% endblock %}

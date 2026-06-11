@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Upload document — CollegeDB{% endblock %}
+{% block content %}
+<h1>Upload a document</h1>
+<div class="card">
+  <p class="muted small">Any office can capture a document the moment it's in hand — it lands in
+     the <em>owning</em> office's review queue automatically. (This replaces Perceptive Content.)</p>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn">Upload</button>
+  </form>
+</div>
+{% endblock %}

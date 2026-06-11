@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Student accounts — CollegeDB{% endblock %}
+{% block content %}
+<h1>Student accounts <span class="badge badge-bad">A/R {{ total_ar|money }}</span></h1>
+<div class="card">
+  <table>
+    <tr><th>Student</th><th class="num">Balance</th><th>Hold</th><th></th></tr>
+    {% for a in accounts %}
+    <tr>
+      <td><a href="{% url 'person_detail' a.person.pk %}">{{ a.person.display_name }}</a>
+        <span class="muted small">{{ a.person.college_id }}</span></td>
+      <td class="num">{{ a.balance|money }}</td>
+      <td>{% if a.has_hold %}<span class="badge badge-bad">bursar hold</span>{% else %}<span class="muted small">—</span>{% endif %}</td>
+      <td><a class="btn small secondary" href="{% url 'bursar_account' a.person.pk %}">Ledger</a></td>
+    </tr>
+    {% empty %}<tr><td colspan="4" class="empty">Nobody owes anything. Frame this page.</td></tr>{% endfor %}
+  </table>
+  <p class="muted small mt">Balances over $500 place the registration/transcript hold automatically;
+     paying to zero releases it the same second.</p>
+</div>
+{% endblock %}

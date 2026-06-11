@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Application — {{ application.person.display_name }} — CollegeDB{% endblock %}
+{% block content %}
+<h1>Application — <a href="{% url 'person_detail' application.person.pk %}">{{ application.person.display_name }}</a>
+  <span class="badge {{ application.stage|status_class }}">{{ application.get_stage_display }}</span></h1>
+<p class="muted">{{ application.program.name }} · {{ application.term.name }} · source {{ application.get_source_display }}
+  {% if application.high_school %} · {{ application.high_school }}{% endif %}
+  {% if application.gpa_reported %} · reported GPA {{ application.gpa_reported }}{% endif %}</p>
+
+{% if is_admissions and next_stages %}
+<form method="post" action="{% url 'stage_change' application.pk %}" class="no-print">
+  {% csrf_token %}
+  Move to:
+  {% for code, label in next_stages %}
+    <button class="btn small {% if code == 'DENIED' or code == 'WITHDRAWN' %}danger{% elif code == 'ENROLLED' or code == 'ADMITTED' %}good{% endif %}"
+            name="stage" value="{{ code }}"
+            {% if code == "ENROLLED" %}formnovalidate{% endif %}>{{ label }}</button>
+  {% endfor %}
+</form>
+{% endif %}
+
+<div class="grid cols-2 mt">
+  <div class="card">
+    <h2>Checklist</h2>
+    <table>
+      <tr><th>Item</th><th>Status</th><th>Document</th><th></th></tr>
+      {% for item in checklist %}
+      <tr>
+        <td>{{ item.name }}{% if item.required %} <span class="muted small">required</span>{% endif %}</td>
+        <td><span class="badge {{ item.status|status_class }}">{{ item.get_status_display }}</span></td>
+        <td>{% if item.document %}<a href="{% url 'document_detail' item.document.pk %}">view</a>{% else %}—{% endif %}</td>
+        <td>
+          {% if item.status == "MISSING" and is_admissions %}
+          <form class="inline" method="post" action="{% url 'checklist_waive' application.pk item.pk %}">
+            {% csrf_token %}<button class="btn small secondary">Waive</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}<tr><td colspan="4" class="empty">Checklist appears when the application reaches Applied.</td></tr>{% endfor %}
+    </table>
+    <p class="small mt">Documents uploaded for this person auto-complete matching items once the
+      owning office verifies them — no re-keying.
+      <a class="btn small secondary" href="{% url 'document_upload' %}?person={{ application.person.pk }}">Upload</a></p>
+  </div>
+
+  <div class="card">
+    <h2>Communications</h2>
+    {% for c in communications %}
+      <p class="small">{{ c.get_channel_display }} {{ c.get_direction_display|lower }} — <strong>{{ c.subject }}</strong>
+        <span class="muted">({{ c.occurred_at|date:"Y-m-d" }}, {{ c.logged_by.username }})</span>
+        {% if c.notes %}<br>{{ c.notes|truncatechars:120 }}{% endif %}</p>
+    {% empty %}<p class="empty">No contact logged yet.</p>{% endfor %}
+    <form method="post" action="{% url 'communication_add' application.pk %}">
+      {% csrf_token %}
+      {{ comm_form.as_p }}
+      <button class="btn small">Log interaction</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

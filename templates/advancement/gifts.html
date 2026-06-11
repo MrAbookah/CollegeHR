@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Gifts — CollegeDB{% endblock %}
+{% block content %}
+{% if forbidden %}{% include "partials/forbidden.html" %}{% else %}
+<h1>Gifts <span class="badge badge-good">total {{ total|money }}</span></h1>
+<div class="grid cols-2">
+  <div class="card">
+    <h2>Recent gifts</h2>
+    <table>
+      <tr><th>Date</th><th>Donor</th><th>Designation</th><th class="num">Amount</th></tr>
+      {% for g in gifts %}
+      <tr>
+        <td>{{ g.gift_date }}</td>
+        <td><a href="{% url 'donor_detail' g.person.pk %}">{{ g.person.display_name }}</a></td>
+        <td>{{ g.designation.name }}</td>
+        <td class="num">{{ g.amount|money }}</td>
+      </tr>
+      {% empty %}<tr><td colspan="4" class="empty">No gifts recorded.</td></tr>{% endfor %}
+    </table>
+  </div>
+  <div class="card">
+    <h2>By designation</h2>
+    <table>
+      <tr><th>Designation</th><th class="num">Gifts</th><th class="num">Total</th></tr>
+      {% for row in by_designation %}
+      <tr><td>{{ row.designation__name }}</td><td class="num">{{ row.n }}</td><td class="num">{{ row.total|money }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

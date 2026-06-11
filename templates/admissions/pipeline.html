@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Admissions pipeline — CollegeDB{% endblock %}
+{% block content %}
+<h1>Admissions pipeline{% if term %} — {{ term.name }}{% endif %}</h1>
+<form method="get" class="no-print row">
+  <p><label>Term</label>
+    <select name="term" onchange="this.form.submit()">
+      <option value="">All terms</option>
+      {% for t in terms %}<option value="{{ t.code }}" {% if t == term %}selected{% endif %}>{{ t.name }}</option>{% endfor %}
+    </select></p>
+</form>
+<div class="board">
+  {% for col in columns %}
+  <div class="col">
+    <h3>{{ col.label }} <span class="badge badge-muted">{{ col.count }}</span></h3>
+    {% for app in col.cards %}
+    <div class="kcard">
+      <a href="{% url 'application_detail' app.pk %}">{{ app.person.display_name }}</a><br>
+      <span class="muted small">{{ app.program.code }} · {{ app.term.code }}</span>
+      {% if not app.checklist_complete and app.stage == "APPLIED" %}<br><span class="badge badge-warn">checklist incomplete</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Notifications — CollegeDB{% endblock %}
+{% block content %}
+<h1>Notifications</h1>
+<form method="post" action="{% url 'notification_read_all' %}" class="no-print">{% csrf_token %}
+  <button class="btn small secondary">Mark all read</button></form>
+<div class="card mt">
+  {% for n in notifications %}
+  <p class="small">
+    {% if not n.read_at %}<span class="badge badge-warn">new</span>{% endif %}
+    <a href="{% url 'notification_go' n.pk %}">{{ n.title }}</a>
+    {% if n.body %}<br><span class="muted">{{ n.body|truncatechars:140 }}</span>{% endif %}
+    <br><span class="muted">{{ n.created_at }}</span>
+  </p>
+  {% empty %}<p class="empty">No notifications.</p>{% endfor %}
+  {% if page_obj.has_other_pages %}
+  <p class="small">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">← Prev</a>{% endif %}
+  page {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next →</a>{% endif %}</p>
+  {% endif %}
+</div>
+{% endblock %}

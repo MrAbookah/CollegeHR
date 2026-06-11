@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Change request #{{ cr.pk }} — CollegeDB{% endblock %}
+{% block content %}
+<h1>Change request #{{ cr.pk }}
+  <span class="badge {{ cr.status|status_class }}">{{ cr.get_status_display }}</span>
+  {% if cr.reverted %}<span class="badge badge-bad">reverted</span>{% endif %}
+</h1>
+<div class="card">
+  <dl class="kv">
+    <dt>Person</dt><dd><a href="{% url 'person_detail' cr.person.pk %}">{{ cr.person.display_name }}</a></dd>
+    <dt>What</dt><dd>{{ cr.get_action_display }} {{ cr.model_label }}</dd>
+    <dt>Domain</dt><dd>{{ cr.data_domain }}</dd>
+    <dt>Policy</dt><dd>{% if cr.applied_immediately %}Applied immediately, owner verifies{% else %}Held until owner approves{% endif %}</dd>
+    <dt>Submitted</dt><dd>{{ cr.submitted_at }} by {{ cr.submitted_by.username }} ({{ cr.submitted_department.name|default:"—" }})</dd>
+    {% if cr.reviewed_by %}<dt>Reviewed</dt><dd>{{ cr.reviewed_at }} by {{ cr.reviewed_by.username }} — {{ cr.review_note|default:"no note" }}</dd>{% endif %}
+  </dl>
+  <table class="mt">
+    <tr><th>Field</th><th>Old</th><th>New</th></tr>
+    {% for field, old, new in cr.field_changes %}
+    <tr><td>{{ field }}</td><td class="muted">{{ old }}</td><td><strong>{{ new }}</strong></td></tr>
+    {% endfor %}
+  </table>
+  {% if can_review %}
+  <form method="post" action="{% url 'change_review' cr.pk %}" class="mt">
+    {% csrf_token %}
+    <p><label>Note to the submitter</label>{{ review_form.note }}</p>
+    <button class="btn good" name="decision" value="approve">Approve</button>
+    <button class="btn danger" name="decision" value="reject">Reject{% if cr.applied_immediately %} & revert{% endif %}</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

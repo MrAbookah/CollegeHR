@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Tasks — CollegeDB{% endblock %}
+{% block content %}
+<h1>Tasks</h1>
+<p class="no-print">
+  <a class="btn small {% if scope != 'mine' %}secondary{% endif %}" href="?scope=mine&status={{ status }}">Mine</a>
+  <a class="btn small {% if scope == 'mine' %}secondary{% endif %}" href="?scope=dept&status={{ status }}">My departments</a>
+  &nbsp;·&nbsp;
+  <a class="btn small {% if status != 'open' %}secondary{% endif %}" href="?scope={{ scope }}&status=open">Open</a>
+  <a class="btn small {% if status != 'done' %}secondary{% endif %}" href="?scope={{ scope }}&status=done">Done</a>
+  &nbsp;·&nbsp;
+  <a class="btn" href="{% url 'task_new' %}">New referral</a>
+</p>
+<div class="card">
+  <form method="get" class="row small">
+    <input type="hidden" name="scope" value="{{ scope }}"><input type="hidden" name="status" value="{{ status }}">
+    <p><label>Type</label>
+      <select name="type" onchange="this.form.submit()">
+        <option value="">All types</option>
+        {% for code, label in task_types %}<option value="{{ code }}" {% if type_filter == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select></p>
+  </form>
+  <table>
+    <tr><th>Task</th><th>Type</th><th>Person</th><th>From → To</th><th>Assigned</th><th>Age</th></tr>
+    {% for task in tasks %}
+    <tr>
+      <td><a href="{% url 'task_detail' task.pk %}">{{ task.title|truncatechars:75 }}</a>
+        {% if task.is_overdue %}<span class="badge badge-bad">overdue</span>{% endif %}</td>
+      <td><span class="badge badge-muted">{{ task.get_task_type_display }}</span></td>
+      <td>{% if task.person %}{{ task.person.display_name }}{% else %}—{% endif %}</td>
+      <td class="small">{{ task.originating_department.code|default:"—" }} → {{ task.assigned_department.code }}</td>
+      <td class="small">{{ task.assigned_to.username|default:"unclaimed" }}</td>
+      <td class="muted small">{{ task.created_at|timesince }}</td>
+    </tr>
+    {% empty %}<tr><td colspan="6" class="empty">No tasks match.</td></tr>{% endfor %}
+  </table>
+  {% if page_obj.has_other_pages %}
+  <p class="small mt">
+    {% if page_obj.has_previous %}<a href="?scope={{ scope }}&status={{ status }}&page={{ page_obj.previous_page_number }}">← Prev</a>{% endif %}
+    page {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}
+    {% if page_obj.has_next %}<a href="?scope={{ scope }}&status={{ status }}&page={{ page_obj.next_page_number }}">Next →</a>{% endif %}
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

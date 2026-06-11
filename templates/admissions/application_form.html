@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}New application — CollegeDB{% endblock %}
+{% block content %}
+<h1>New application — {{ person.display_name }}</h1>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn">Open application</button>
+    <a class="btn secondary" href="{% url 'person_detail' person.pk %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

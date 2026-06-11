@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Holds — CollegeDB{% endblock %}
+{% block content %}
+<h1>Holds</h1>
+<p class="no-print">
+  <a class="btn small {% if scope == 'all' %}secondary{% endif %}" href="?scope=mine">My department's</a>
+  <a class="btn small {% if scope != 'all' %}secondary{% endif %}" href="?scope=all">All active</a>
+  &nbsp;·&nbsp;<a class="btn" href="{% url 'hold_new' %}">Place a hold</a>
+</p>
+<div class="card">
+  <table>
+    <tr><th>Person</th><th>Hold</th><th>Blocks</th><th class="num">Amount</th><th>Reason</th><th>Placed</th><th></th></tr>
+    {% for hold in holds %}
+    <tr>
+      <td><a href="{% url 'person_detail' hold.person.pk %}">{{ hold.person.display_name }}</a></td>
+      <td>{{ hold.hold_type.name }} <span class="muted small">({{ hold.hold_type.owning_department.code }})</span></td>
+      <td class="small">{{ hold.hold_type.blocks_summary }}</td>
+      <td class="num">{{ hold.amount|money }}</td>
+      <td class="small">{{ hold.reason|truncatechars:50 }}</td>
+      <td class="small muted">{{ hold.placed_at|date:"Y-m-d" }} by {{ hold.placed_by.username|default:"system" }}</td>
+      <td>
+        {% if hold.hold_type.owning_department.code in my_dept_codes or user.is_superuser %}
+        <form class="inline" method="post" action="{% url 'hold_release' hold.pk %}">{% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <input type="text" name="note" placeholder="release note" style="width:120px">
+          <button class="btn small good">Release</button>
+        </form>
+        {% else %}<span class="muted small">only {{ hold.hold_type.owning_department.code }} releases</span>{% endif %}
+      </td>
+    </tr>
+    {% empty %}<tr><td colspan="7" class="empty">No active holds.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}

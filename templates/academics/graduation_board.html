@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Graduation clearance — CollegeDB{% endblock %}
+{% block content %}
+<h1>Graduation clearance board</h1>
+<p class="muted small">Rows are applicants; columns are the offices that must clear them.
+   Each office clears its own cell — nobody chases anybody by email.</p>
+<div class="card">
+  <table>
+    <tr>
+      <th>Candidate</th><th>Program</th><th>Term</th><th>Status</th>
+      {% for code in dept_codes %}<th class="clearance-cell">{{ code }}</th>{% endfor %}
+    </tr>
+    {% for row in rows %}
+    <tr>
+      <td><a href="{% url 'graduation_detail' row.app.pk %}">{{ row.app.person.display_name }}</a></td>
+      <td class="small">{{ row.app.student_program.program.code }}</td>
+      <td class="small">{{ row.app.term.code }}</td>
+      <td><span class="badge {{ row.app.status|status_class }}">{{ row.app.get_status_display }}</span></td>
+      {% for cell in row.cells %}
+      <td class="clearance-cell">
+        {% for item in cell %}
+          {% if item.status == "CLEARED" %}<span class="badge badge-good" title="{{ item.item }}">✓</span>
+          {% elif item.status == "FLAGGED" %}<span class="badge badge-bad" title="{{ item.item }}: {{ item.note }}">✗</span>
+          {% else %}<span class="badge badge-warn" title="{{ item.item }}">…</span>{% endif %}
+        {% empty %}<span class="muted">—</span>{% endfor %}
+      </td>
+      {% endfor %}
+    </tr>
+    {% empty %}<tr><td colspan="10" class="empty">No graduation applications yet.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}

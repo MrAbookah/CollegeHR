@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ course.code }} — CollegeDB{% endblock %}
+{% block content %}
+<h1>{{ course.code }}: {{ course.title }} <span class="badge badge-muted">{{ course.credits }} cr</span></h1>
+<div class="card">
+  <p>{{ course.description|default:"No description." }}</p>
+</div>
+<div class="card">
+  <h2>Sections</h2>
+  <table>
+    <tr><th>Term</th><th>Section</th><th>Instructor</th><th>Schedule</th><th>Room</th><th>Seats</th><th>Status</th></tr>
+    {% for s in sections %}
+    <tr>
+      <td>{{ s.term.code }}</td>
+      <td><a href="{% url 'section_detail' s.pk %}">{{ s.section_number }}</a></td>
+      <td>{{ s.instructor.display_name|default:"TBA" }}</td>
+      <td>{{ s.schedule_display }}</td>
+      <td>{{ s.room|default:"—" }}</td>
+      <td>{{ s.seats_taken }}/{{ s.capacity }}</td>
+      <td><span class="badge badge-muted">{{ s.get_status_display }}</span></td>
+    </tr>
+    {% empty %}<tr><td colspan="7" class="empty">Never offered.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}

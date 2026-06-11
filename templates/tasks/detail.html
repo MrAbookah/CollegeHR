@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}{{ task.title }} — CollegeDB{% endblock %}
+{% block content %}
+<h1>{{ task.title }}</h1>
+<p>
+  <span class="badge badge-muted">{{ task.get_task_type_display }}</span>
+  <span class="badge {{ task.status|status_class }}">{{ task.get_status_display }}</span>
+  {% if task.outcome %}<span class="badge {{ task.outcome|status_class }}">{{ task.get_outcome_display }}</span>{% endif %}
+  {% if task.is_overdue %}<span class="badge badge-bad">overdue {{ task.due_date }}</span>{% endif %}
+</p>
+
+<div class="grid cols-2">
+  <div>
+    <div class="card">
+      <dl class="kv">
+        <dt>Person</dt><dd>{% if task.person %}<a href="{% url 'person_detail' task.person.pk %}">{{ task.person.display_name }} ({{ task.person.college_id }})</a>{% else %}—{% endif %}</dd>
+        <dt>From</dt><dd>{{ task.originating_department.name|default:"—" }}</dd>
+        <dt>Queue</dt><dd>{{ task.assigned_department.name }}</dd>
+        <dt>Claimed by</dt><dd>{{ task.assigned_to.username|default:"unclaimed" }}</dd>
+        <dt>Created</dt><dd>{{ task.created_at }} by {{ task.created_by.username|default:"system" }}</dd>
+        {% if task.due_date %}<dt>Due</dt><dd>{{ task.due_date }}</dd>{% endif %}
+        {% if task.completed_at %}<dt>Completed</dt><dd>{{ task.completed_at }} by {{ task.completed_by.username }}</dd>{% endif %}
+      </dl>
+      {% if task.description %}<p class="small mt">{{ task.description|linebreaksbr }}</p>{% endif %}
+      {% if can_act and task.status != "DONE" and task.status != "CANCELLED" %}
+      <p class="mt">
+        {% if not task.assigned_to %}
+        <form class="inline" method="post" action="{% url 'task_claim' task.pk %}">{% csrf_token %}
+          <button class="btn small secondary">Claim</button></form>
+        {% endif %}
+        {% if task.task_type != "VERIFY_CHANGE" %}
+        <form class="inline" method="post" action="{% url 'task_complete' task.pk %}">{% csrf_token %}
+          <button class="btn small good">Mark complete</button></form>
+        {% endif %}
+      </p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h3>Conversation</h3>
+      {% for c in task.comments.all %}
+        <p class="small"><strong>{{ c.author.username }}</strong> <span class="muted">{{ c.created_at|timesince }} ago</span><br>
+          {{ c.body|linebreaksbr }}</p>
+      {% empty %}<p class="empty">No comments — this thread replaces the lost-email back-and-forth.</p>{% endfor %}
+      <form method="post" action="{% url 'task_comment' task.pk %}">
+        {% csrf_token %}
+        {{ comment_form.body }}
+        <button class="btn small mt">Comment</button>
+      </form>
+    </div>
+  </div>
+
+  <div>
+    {% if change_request %}
+    <div class="card">
+      <h3>Change request #{{ change_request.pk }}
+        <span class="badge {{ change_request.status|status_class }}">{{ change_request.get_status_display }}</span>
+        {% if change_request.applied_immediately %}<span class="badge badge-warn">already live</span>{% else %}<span class="badge badge-muted">not applied yet</span>{% endif %}
+      </h3>
+      <p class="small muted">
+        {{ change_request.get_action_display }} {{ change_request.model_label }} ·
+        domain {{ change_request.data_domain }} ·
+        by {{ change_request.submitted_by.username }}
+        ({{ change_request.submitted_department.name|default:"no dept" }})
+      </p>
+      <table>
+        <tr><th>Field</th><th>Old</th><th>New</th></tr>
+        {% for field, old, new in change_request.field_changes %}
+        <tr><td>{{ field }}</td><td class="muted">{{ old }}</td><td><strong>{{ new }}</strong></td></tr>
+        {% endfor %}
+      </table>
+      {% if can_review %}
+      <form method="post" action="{% url 'change_review' change_request.pk %}" class="mt">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <p><label>Note to the submitter</label>{{ review_form.note }}</p>
+        <button class="btn good" name="decision" value="approve">Approve</button>
+        <button class="btn danger" name="decision" value="reject">
+          Reject{% if change_request.applied_immediately %} & revert{% endif %}</button>
+      </form>
+      {% elif change_request.status == "PENDING" %}
+      <p class="muted small">Only {{ change_request.data_domain }} owners can rule on this
+        (and not the person who submitted it).</p>
+      {% else %}
+      <p class="small">Reviewed by {{ change_request.reviewed_by.username }} — {{ change_request.review_note|default:"no note" }}</p>
+      {% endif %}
+    </div>
+    {% elif related_object %}
+    <div class="card">
+      <h3>Related record</h3>
+      <p>{{ related_object }}</p>
+      {% if task.task_type == "REVIEW_DOCUMENT" %}
+        <a class="btn small" href="{% url 'document_detail' related_object.pk %}">Open document</a>
+      {% elif task.task_type == "GRADUATION_CLEARANCE" %}
+        <a class="btn small" href="{% url 'graduation_detail' related_object.pk %}">Open clearance</a>
+      {% elif task.task_type == "REVIEW_APPLICATION" or task.task_type == "REFERRAL" %}
+        {% if related_object.stage %}<a class="btn small" href="{% url 'application_detail' related_object.pk %}">Open application</a>{% endif %}
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

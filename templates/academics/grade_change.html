@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Grade change — CollegeDB{% endblock %}
+{% block content %}
+<h1>Grade change — {{ object.person.display_name }}</h1>
+<div class="card">
+  <p class="small">{{ object.section }} · current grade: <strong>{{ object.grade|default:"none" }}</strong></p>
+  <p class="muted small">Grades belong to the Registrar (or the section's own instructor).
+     If that's not you, this submits a <strong>held</strong> change request — nothing changes
+     until REG approves.</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn">Submit</button>
+  </form>
+</div>
+{% endblock %}

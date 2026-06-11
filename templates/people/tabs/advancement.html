@@ -1,0 +1,23 @@
+{% load college %}
+<div class="card">
+  <h3>Giving <span class="badge badge-good">lifetime {{ total_giving|money }}</span></h3>
+  {% if alumni_info %}
+  <p class="small">Class of {{ alumni_info.class_year|default:"?" }} — {{ alumni_info.degree_received }}
+    {% if alumni_info.do_not_solicit %}<span class="badge badge-bad">do not solicit</span>{% endif %}</p>
+  {% endif %}
+  <table>
+    <tr><th>Date</th><th>Designation</th><th class="num">Amount</th><th>Receipt</th></tr>
+    {% for g in gifts %}
+    <tr><td>{{ g.gift_date }}</td><td>{{ g.designation.name }}</td>
+        <td class="num">{{ g.amount|money }}</td><td class="small">{{ g.receipt_number }}</td></tr>
+    {% empty %}<tr><td colspan="4" class="empty">No gifts.</td></tr>{% endfor %}
+  </table>
+  {% if pledges %}
+  <h3>Pledges</h3>
+  {% for p in pledges %}
+    <p class="small">{{ p.designation.name }}: {{ p.fulfilled_amount|money }} of {{ p.total_amount|money }}
+      <span class="badge {{ p.status|status_class }}">{{ p.get_status_display }}</span></p>
+  {% endfor %}
+  {% endif %}
+  <p class="mt"><a href="{% url 'donor_detail' person.pk %}">Donor profile</a></p>
+</div>

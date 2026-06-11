@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Document queue — CollegeDB{% endblock %}
+{% block content %}
+<h1>Document review queue</h1>
+<p class="no-print">
+  <a class="btn small {% if scope == 'all' %}secondary{% endif %}" href="?scope=mine">My department's types</a>
+  <a class="btn small {% if scope != 'all' %}secondary{% endif %}" href="?scope=all">All pending</a>
+  &nbsp;·&nbsp;<a class="btn" href="{% url 'document_upload' %}">Upload a document</a>
+</p>
+<div class="card">
+  <table>
+    <tr><th>Person</th><th>Type</th><th>Owner office</th><th>Uploaded</th><th>By</th><th></th></tr>
+    {% for d in documents %}
+    <tr>
+      <td><a href="{% url 'person_detail' d.person.pk %}">{{ d.person.display_name }}</a></td>
+      <td>{{ d.doc_type.name }}</td>
+      <td>{{ d.doc_type.owning_department.code }}</td>
+      <td class="small muted">{{ d.created_at|timesince }} ago</td>
+      <td class="small">{{ d.uploaded_by.username|default:"—" }}</td>
+      <td><a class="btn small secondary" href="{% url 'document_detail' d.pk %}">Review</a></td>
+    </tr>
+    {% empty %}<tr><td colspan="6" class="empty">Queue is clear.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}

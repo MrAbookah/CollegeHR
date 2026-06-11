@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Transcript blocked — CollegeDB{% endblock %}
+{% block content %}
+<h1>Transcript unavailable</h1>
+<div class="banner hold">
+  <strong>{{ person.display_name }}'s transcript is blocked by an active hold:</strong>
+  {% for hold in holds %}
+    <br>{{ hold.hold_type.name }}{% if hold.amount %} — {{ hold.amount|money }}{% endif %}
+    — contact <strong>{{ hold.hold_type.owning_department.name }}</strong> ({{ hold.reason|truncatechars:90 }})
+  {% endfor %}
+</div>
+<p>The owning department releases its own hold; the moment it does, the transcript unblocks
+   everywhere — no phone tag.</p>
+<a class="btn secondary" href="{% url 'person_detail' person.pk %}">Back to {{ person.display_name }}</a>
+{% endblock %}

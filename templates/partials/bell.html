@@ -1,0 +1,13 @@
+<details class="bell">
+  <summary>🔔{% if unread %} <span class="count">{{ unread }}</span>{% endif %}</summary>
+  <div class="drop">
+    {% for n in items %}
+      <a class="item {% if not n.read_at %}unread{% endif %}" href="{% url 'notification_go' n.pk %}">
+        {{ n.title }}<br><span class="muted small">{{ n.created_at|timesince }} ago</span>
+      </a>
+    {% empty %}
+      <span class="item muted" style="display:block;padding:.6rem .7rem;">No notifications yet.</span>
+    {% endfor %}
+    <a class="all" href="{% url 'notification_list' %}">All notifications</a>
+  </div>
+</details>

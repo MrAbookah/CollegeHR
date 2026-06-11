@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Reports — CollegeDB{% endblock %}
+{% block content %}
+<h1>Reports</h1>
+<p class="muted small">One source of truth, one definition per number — the antidote to every
+   office keeping its own conflicting spreadsheet.</p>
+<div class="grid cols-2">
+  <div class="card">
+    <h2>Headcount by affiliation</h2>
+    <table>
+      <tr><th>Affiliation</th><th class="num">People</th></tr>
+      {% for row in headcount %}<tr><td>{{ row.type|title }}</td><td class="num">{{ row.n }}</td></tr>{% endfor %}
+    </table>
+  </div>
+  <div class="card">
+    <h2>Enrollment by term</h2>
+    <table>
+      <tr><th>Term</th><th class="num">Students</th></tr>
+      {% for row in enrollment_by_term %}<tr><td>{{ row.section__term__name }}</td><td class="num">{{ row.n }}</td></tr>{% endfor %}
+    </table>
+  </div>
+  <div class="card">
+    <h2>Accounts receivable aging</h2>
+    <table>
+      <tr><th>Balance bucket</th><th class="num">Students</th></tr>
+      {% for bucket, n in ar_buckets.items %}<tr><td>${{ bucket }}</td><td class="num">{{ n }}</td></tr>{% endfor %}
+      <tr><th>Total A/R</th><th class="num">{{ ar_total|money }}</th></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h2>Giving by designation</h2>
+    <table>
+      <tr><th>Designation</th><th class="num">Gifts</th><th class="num">Total</th></tr>
+      {% for row in giving %}<tr><td>{{ row.designation__name }}</td><td class="num">{{ row.n }}</td><td class="num">{{ row.total|money }}</td></tr>{% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

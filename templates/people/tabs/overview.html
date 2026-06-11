@@ -1,0 +1,46 @@
+{% load college %}
+<div class="grid cols-2">
+  <div class="card">
+    <h3>Identity</h3>
+    <dl class="kv">
+      <dt>Legal name</dt><dd>{{ person.full_legal_name }}</dd>
+      <dt>Preferred</dt><dd>{{ person.preferred_name|default:"—" }}</dd>
+      <dt>Date of birth</dt><dd>{{ person.date_of_birth|default:"—" }}</dd>
+      <dt>Email</dt><dd>{{ person.primary_email|default:"—" }}</dd>
+      <dt>Phone</dt><dd>{{ person.primary_phone|default:"—" }}</dd>
+      <dt>Directory opt-out</dt><dd>{{ person.directory_optout|yesno:"Yes — suppress,No" }}</dd>
+      <dt>Legacy Banner ID</dt><dd>{{ person.banner_id|default:"—" }}</dd>
+    </dl>
+  </div>
+  <div class="card">
+    <h3>Affiliation history</h3>
+    <table>
+      <tr><th>Role</th><th>Status</th><th>From</th><th>To</th></tr>
+      {% for a in affiliations %}
+      <tr>
+        <td>{{ a.get_type_display }}</td>
+        <td><span class="badge {{ a.status|status_class }}">{{ a.get_status_display }}</span></td>
+        <td>{{ a.start_date }}</td><td>{{ a.end_date|default:"—" }}</td>
+      </tr>
+      {% empty %}<tr><td colspan="4" class="empty">No affiliations yet.</td></tr>{% endfor %}
+    </table>
+  </div>
+  <div class="card">
+    <h3>Addresses <a class="btn small secondary" href="{% url 'address_new' person.pk %}">Add</a></h3>
+    {% for addr in addresses %}
+      <p class="small">{{ addr.get_type_display }}{% if addr.is_primary %} <span class="badge badge-muted">primary</span>{% endif %}<br>
+      {{ addr.line1 }}{% if addr.line2 %}, {{ addr.line2 }}{% endif %}, {{ addr.city }}, {{ addr.state }} {{ addr.postal_code }}
+      {% with n=addr|pending_crs %}{% if n %}<span class="badge badge-warn">pending verification</span>{% endif %}{% endwith %}</p>
+    {% empty %}<p class="empty">No address on file.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <h3>Emergency contacts <a class="btn small secondary" href="{% url 'contact_new' person.pk %}">Add</a></h3>
+    {% for c in contacts %}
+      <p class="small">{{ c.name }} ({{ c.relationship }}) — {{ c.phone }}</p>
+    {% empty %}<p class="empty">None on file.</p>{% endfor %}
+    {% if memberships %}
+    <h3>Works in</h3>
+    {% for m in memberships %}{% if not m.end_date %}<span class="badge badge-role">{{ m.department.name }} ({{ m.get_role_display }})</span>{% endif %}{% endfor %}
+    {% endif %}
+  </div>
+</div>

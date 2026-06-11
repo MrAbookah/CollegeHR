@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Register {{ person.display_name }} — CollegeDB{% endblock %}
+{% block content %}
+<h1>Registration — {{ person.display_name }} <span class="cid">{{ person.college_id }}</span></h1>
+<form method="get" class="no-print row">
+  <p><label>Term</label>
+    <select name="term" onchange="this.form.submit()">
+      {% for t in terms %}<option value="{{ t.code }}" {% if t == term %}selected{% endif %}>{{ t.name }}</option>{% endfor %}
+    </select></p>
+</form>
+
+{% if blocked_holds %}
+<div class="banner hold">
+  <strong>Registration blocked.</strong>
+  {% for hold in blocked_holds %}
+    <br>{{ hold.hold_type.name }}{% if hold.amount %} — {{ hold.amount|money }}{% endif %}
+    — release it with <strong>{{ hold.hold_type.owning_department.name }}</strong>
+    ({{ hold.reason|truncatechars:80 }})
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="grid cols-2">
+  <div class="card">
+    <h2>{{ term.code }} schedule <span class="badge badge-muted">{{ credits }} credits</span></h2>
+    <table>
+      <tr><th>Section</th><th>Schedule</th><th class="num">Cr</th><th></th></tr>
+      {% for e in schedule %}
+      <tr>
+        <td>{{ e.section.course.code }}-{{ e.section.section_number }}<br>
+          <span class="muted small">{{ e.section.course.title|truncatechars:40 }}</span></td>
+        <td class="small">{{ e.section.schedule_display }}</td>
+        <td class="num">{{ e.section.course.credits }}</td>
+        <td>
+          {% if can_register %}
+          <form class="inline" method="post" data-confirm="Drop {{ e.section.course.code }}?">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="drop">
+            <input type="hidden" name="enrollment_id" value="{{ e.pk }}">
+            <button class="btn small danger">Drop</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}<tr><td colspan="4" class="empty">Not registered this term.</td></tr>{% endfor %}
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Add a section</h2>
+    {% if can_register %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add">
+      {{ add_form.as_p }}
+      <button class="btn" {% if blocked_holds %}disabled title="Blocked by holds"{% endif %}>Register</button>
+    </form>
+    <p class="muted small mt">The service enforces: holds, registration window, seats, duplicate
+      course, and time conflicts — same rules no matter which office clicks.</p>
+    {% else %}
+    <p class="muted">Only the Registrar registers students on this screen. Send them a referral
+      if you need a registration handled.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

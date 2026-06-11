@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Dashboard — CollegeDB{% endblock %}
+{% block content %}
+<h1>Welcome back, {{ user.first_name|default:user.username }}</h1>
+
+<div class="grid cols-2">
+  <div class="card">
+    <h2>My claimed tasks</h2>
+    {% for task in my_tasks %}
+      <p class="small">
+        <a href="{% url 'task_detail' task.pk %}">{{ task.title }}</a>
+        {% if task.is_overdue %}<span class="badge badge-bad">overdue</span>{% endif %}<br>
+        <span class="muted">{{ task.get_task_type_display }}{% if task.person %} · {{ task.person.display_name }}{% endif %}{% if task.due_date %} · due {{ task.due_date }}{% endif %}</span>
+      </p>
+    {% empty %}<p class="empty">Nothing claimed. Pick something from your department queue →</p>{% endfor %}
+    <a class="small" href="{% url 'task_list' %}?scope=mine">All my tasks</a>
+  </div>
+
+  <div class="card">
+    <h2>My pending change requests</h2>
+    {% for cr in my_pending_crs %}
+      <p class="small">
+        <a href="{% url 'change_detail' cr.pk %}">CR#{{ cr.pk }} — {{ cr.get_action_display }} {{ cr.model_label }}</a><br>
+        <span class="muted">{{ cr.person.display_name }} · waiting on {{ cr.data_domain }} owner
+        {% if cr.applied_immediately %}<span class="badge badge-warn">live, unverified</span>{% endif %}</span>
+      </p>
+    {% empty %}<p class="empty">No changes waiting on another office.</p>{% endfor %}
+  </div>
+</div>
+
+{% for q in dept_queues %}
+<div class="card">
+  <h2>{{ q.department.name }} queue <span class="badge badge-warn">{{ q.count }} open</span></h2>
+  {% if q.tasks %}
+  <table>
+    <tr><th>Task</th><th>Type</th><th>Person</th><th>From</th><th>Waiting</th><th></th></tr>
+    {% for task in q.tasks %}
+    <tr>
+      <td><a href="{% url 'task_detail' task.pk %}">{{ task.title|truncatechars:70 }}</a>
+          {% if task.is_overdue %}<span class="badge badge-bad">overdue</span>{% endif %}</td>
+      <td><span class="badge badge-muted">{{ task.get_task_type_display }}</span></td>
+      <td>{% if task.person %}<a href="{% url 'person_detail' task.person.pk %}">{{ task.person.display_name }}</a>{% else %}—{% endif %}</td>
+      <td>{{ task.originating_department.code|default:"—" }}</td>
+      <td class="muted small">{{ task.created_at|timesince }}</td>
+      <td>
+        <form class="inline" method="post" action="{% url 'task_claim' task.pk %}">{% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}">
+          <button class="btn small secondary">Claim</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}<p class="empty">Queue is clear. 🎉</p>{% endif %}
+</div>
+{% endfor %}
+
+<div class="grid cols-2">
+  <div class="card">
+    <h2>Holds my department owns <span class="badge badge-warn">{{ my_holds_count }}</span></h2>
+    {% for hold in my_holds %}
+      <p class="small">
+        <a href="{% url 'person_detail' hold.person.pk %}">{{ hold.person.display_name }}</a> —
+        {{ hold.hold_type.name }}{% if hold.amount %} ({{ hold.amount|money }}){% endif %}<br>
+        <span class="muted">blocks {{ hold.hold_type.blocks_summary }}</span>
+      </p>
+    {% empty %}<p class="empty">No active holds owned by your department.</p>{% endfor %}
+    <a class="small" href="{% url 'hold_list' %}">Manage holds</a>
+  </div>
+
+  <div class="card">
+    <h2>Recent notifications</h2>
+    {% for n in recent_notifications %}
+      <p class="small {% if not n.read_at %}unread{% endif %}">
+        <a href="{% url 'notification_go' n.pk %}">{{ n.title }}</a><br>
+        <span class="muted">{{ n.created_at|timesince }} ago{% if not n.read_at %} · <strong>new</strong>{% endif %}</span>
+      </p>
+    {% empty %}<p class="empty">Quiet so far.</p>{% endfor %}
+  </div>
+</div>
+
+<p>
+  <a class="btn" href="{% url 'task_new' %}">Send a referral to another office</a>
+  <a class="btn secondary" href="{% url 'hold_new' %}">Place a hold</a>
+  <a class="btn secondary" href="{% url 'document_upload' %}">Upload a document</a>
+</p>
+{% endblock %}

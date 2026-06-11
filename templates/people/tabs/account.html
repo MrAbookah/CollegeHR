@@ -1,0 +1,18 @@
+{% load college %}
+<div class="card">
+  <h3>Student account
+    <span class="badge {% if balance > 0 %}badge-bad{% else %}badge-good{% endif %}">balance {{ balance|money }}</span>
+  </h3>
+  <table>
+    <tr><th>Date</th><th>Type</th><th>Description</th><th class="num">Amount</th></tr>
+    {% for e in entries %}
+    <tr>
+      <td>{{ e.effective_date }}</td>
+      <td><span class="badge badge-muted">{{ e.get_entry_type_display }}</span></td>
+      <td>{{ e.description }}</td>
+      <td class="num">{{ e.amount|money }}</td>
+    </tr>
+    {% empty %}<tr><td colspan="4" class="empty">No activity.</td></tr>{% endfor %}
+  </table>
+  <p class="mt"><a href="{% url 'bursar_account' person.pk %}">Full ledger & posting</a></p>
+</div>

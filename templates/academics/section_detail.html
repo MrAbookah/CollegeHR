@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}{{ section }} — CollegeDB{% endblock %}
+{% block content %}
+<h1>{{ section.course.code }}-{{ section.section_number }} <span class="muted">{{ section.term.name }}</span></h1>
+<p>{{ section.course.title }} · {{ section.schedule_display }} · {{ section.room|default:"room TBA" }}
+   · {{ section.instructor.display_name|default:"instructor TBA" }}
+   · {{ section.seats_taken }}/{{ section.capacity }} seats</p>
+
+<div class="card">
+  <h2>Roster {% if can_grade %}<span class="badge badge-good">you can grade</span>{% endif %}</h2>
+  <table>
+    <tr><th>Student</th><th>Status</th><th>Grade</th>{% if can_grade %}<th>Enter grade</th>{% endif %}</tr>
+    {% for e in roster %}
+    <tr>
+      <td><a href="{% url 'person_detail' e.person.pk %}">{{ e.person.display_name }}</a>
+        <span class="muted small">{{ e.person.college_id }}</span></td>
+      <td><span class="badge {{ e.status|status_class }}">{{ e.get_status_display }}</span></td>
+      <td>{{ e.grade|default:"—" }}</td>
+      {% if can_grade %}
+      <td>
+        <form class="inline row" method="post" action="{% url 'enter_grade' section.pk e.pk %}">
+          {% csrf_token %}
+          <select name="grade">
+            {% for g in grade_form.grade.field.choices %}<option value="{{ g.0 }}" {% if e.grade == g.0 %}selected{% endif %}>{{ g.1 }}</option>{% endfor %}
+          </select>
+          <button class="btn small">Save</button>
+        </form>
+      </td>
+      {% endif %}
+    </tr>
+    {% empty %}<tr><td colspan="4" class="empty">Nobody registered.</td></tr>{% endfor %}
+  </table>
+  {% if not can_grade %}
+  <p class="muted small mt">Grades are owned by the Registrar and this section's instructor.
+    Anyone else's edits route through a change request.</p>
+  {% endif %}
+</div>
+{% endblock %}

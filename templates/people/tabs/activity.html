@@ -1,0 +1,25 @@
+<div class="grid cols-2">
+  <div class="card">
+    <h3>Audit trail <span class="muted small">every view, edit, and verdict</span></h3>
+    {% for entry in audit_entries %}
+      <p class="small">
+        <span class="badge badge-muted">{{ entry.get_action_display }}</span>
+        {{ entry.summary }}<br>
+        <span class="muted">{{ entry.timestamp|date:"Y-m-d H:i" }} · {{ entry.actor.username|default:"system" }}</span>
+      </p>
+    {% empty %}<p class="empty">No recorded activity.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <h3>Tasks about this person</h3>
+    {% for t in tasks %}
+      <p class="small"><a href="{% url 'task_detail' t.pk %}">{{ t.title|truncatechars:60 }}</a>
+        <span class="badge {{ t.status|status_class }}">{{ t.get_status_display }}</span><br>
+        <span class="muted">{{ t.assigned_department.code }} · {{ t.created_at|date:"Y-m-d" }}</span></p>
+    {% empty %}<p class="empty">No tasks.</p>{% endfor %}
+    <h3>Communications</h3>
+    {% for c in communications %}
+      <p class="small">{{ c.get_channel_display }} {{ c.get_direction_display|lower }} — {{ c.subject }}<br>
+        <span class="muted">{{ c.occurred_at|date:"Y-m-d" }} · {{ c.logged_by.username }}</span></p>
+    {% empty %}<p class="empty">No logged communications.</p>{% endfor %}
+  </div>
+</div>

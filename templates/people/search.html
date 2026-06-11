@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}People — CollegeDB{% endblock %}
+{% block content %}
+<h1>People</h1>
+<div class="card">
+  <form method="get" class="row">
+    <p style="flex:1"><label>Search by name, College ID, or email</label>
+      <input type="search" name="q" value="{{ q }}" autofocus style="max-width:none"></p>
+    <p><button class="btn">Search</button></p>
+  </form>
+</div>
+
+{% if results is not None %}
+<div class="card">
+  <h2>{{ results|length }} result{{ results|length|pluralize }}</h2>
+  {% if results %}
+  <table>
+    <tr><th>Name</th><th>College ID</th><th>Email</th><th>Roles</th></tr>
+    {% for p in results %}
+    <tr>
+      <td><a href="{% url 'person_detail' p.pk %}">{{ p.display_name }}</a></td>
+      <td class="cid">{{ p.college_id }}</td>
+      <td>{{ p.primary_email|default:"—" }}</td>
+      <td>{% for a in p.active_affiliations %}<span class="badge badge-role">{{ a.get_type_display }}</span>{% endfor %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="empty">Nobody matches "{{ q }}".</p>
+  {% endif %}
+  <p class="mt">
+    Not found? <a class="btn" href="{% url 'person_create' %}?token={{ search_token|urlencode }}&first=&last={{ q|urlencode }}">Create a new person</a>
+    <span class="muted small">Searching first is required — that's how we keep one record per human.</span>
+  </p>
+</div>
+{% endif %}
+{% endblock %}

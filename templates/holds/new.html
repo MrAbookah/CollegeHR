@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Place hold — CollegeDB{% endblock %}
+{% block content %}
+<h1>Place a hold</h1>
+<div class="card">
+  <p class="muted small">You can only place hold types your department owns — and only your
+     department will be able to release them.</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn">Place hold</button>
+  </form>
+</div>
+{% endblock %}

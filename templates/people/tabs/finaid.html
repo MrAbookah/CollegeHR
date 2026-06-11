@@ -1,0 +1,17 @@
+{% load college %}
+<div class="card">
+  <h3>Financial aid</h3>
+  <table>
+    <tr><th>Year</th><th>Program</th><th class="num">Offered</th><th class="num">Accepted</th><th>Status</th><th>Disbursed</th></tr>
+    {% for a in awards %}
+    <tr>
+      <td>{{ a.aid_year.code }}</td><td>{{ a.program.name }}</td>
+      <td class="num">{{ a.amount_offered|money }}</td>
+      <td class="num">{{ a.amount_accepted|money }}</td>
+      <td><span class="badge {{ a.status|status_class }}">{{ a.get_status_display }}</span></td>
+      <td class="small">{% for d in a.disbursements.all %}{{ d.term.code }}: <span class="badge {{ d.status|status_class }}">{{ d.get_status_display }}</span> {% endfor %}</td>
+    </tr>
+    {% empty %}<tr><td colspan="6" class="empty">No aid awards.</td></tr>{% endfor %}
+  </table>
+  <p class="mt"><a href="{% url 'finaid_package' person.pk %}">Aid package</a></p>
+</div>

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Edit bio — CollegeDB{% endblock %}
+{% block content %}
+<h1>Edit bio & contact — {{ person.display_name|default:object.display_name }}</h1>
+<div class="card">
+  <p class="muted small">Biographic data is owned by the <strong>Registrar</strong>. If you're in another
+  office your save still goes live immediately — the person at your desk sees it fixed —
+  but the Registrar gets a verification task and can revert it. That's the guardrail.</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn">Save</button>
+    <a class="btn secondary" href="{% url 'person_detail' object.pk %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

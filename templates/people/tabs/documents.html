@@ -1,0 +1,17 @@
+{% load college %}
+<div class="card">
+  <h3>Documents</h3>
+  <table>
+    <tr><th>Type</th><th>Status</th><th>Uploaded</th><th>By</th><th></th></tr>
+    {% for d in documents %}
+    <tr>
+      <td>{{ d.doc_type.name }}</td>
+      <td><span class="badge {{ d.status|status_class }}">{{ d.get_status_display }}</span></td>
+      <td>{{ d.created_at|date:"Y-m-d" }}</td>
+      <td>{{ d.uploaded_by.username|default:"—" }}</td>
+      <td><a href="{% url 'document_detail' d.pk %}">Open</a></td>
+    </tr>
+    {% empty %}<tr><td colspan="5" class="empty">No documents on file.</td></tr>{% endfor %}
+  </table>
+  <p class="mt"><a class="btn small secondary" href="{% url 'document_upload' %}?person={{ person.pk }}">Upload for this person</a></p>
+</div>

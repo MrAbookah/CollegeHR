@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Edit employment — CollegeDB{% endblock %}
+{% block content %}
+<h1>Edit employment — {{ record.person.display_name }}</h1>
+<div class="card">
+  <p class="muted small">Employment data is owned by HR. Edits from any other office are
+     <strong>held</strong> as a change request until HR approves — nothing changes until then.
+     If you can't see the salary field, you can't propose changes to it either.</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn">Save</button>
+    <a class="btn secondary" href="{% url 'hr_employee' record.person.pk %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

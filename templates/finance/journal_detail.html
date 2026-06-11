@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}JE — CollegeDB{% endblock %}
+{% block content %}
+<h1>JE {{ entry.entry_date }} — {{ entry.description }}
+  <span class="badge badge-muted">{{ entry.get_status_display }}</span>
+  {% if balanced %}<span class="badge badge-good">balanced</span>{% else %}<span class="badge badge-warn">unbalanced</span>{% endif %}
+</h1>
+<div class="card">
+  <table>
+    <tr><th>GL account</th><th>Department</th><th class="num">Debit</th><th class="num">Credit</th></tr>
+    {% for line in lines %}
+    <tr>
+      <td>{{ line.gl_account }}</td>
+      <td>{{ line.department.code|default:"—" }}</td>
+      <td class="num">{{ line.debit|money }}</td>
+      <td class="num">{{ line.credit|money }}</td>
+    </tr>
+    {% endfor %}
+    <tr><th></th><th>Totals</th><th class="num">{{ debits|money }}</th><th class="num">{{ credits|money }}</th></tr>
+  </table>
+
+  {% if can_edit and entry.status == "DRAFT" %}
+  <h3>Add line</h3>
+  <form method="post" action="{% url 'journal_add_line' entry.pk %}" class="row">
+    {% csrf_token %}
+    {{ line_form.as_p }}
+    <p><button class="btn small">Add</button></p>
+  </form>
+  <form method="post" action="{% url 'journal_post' entry.pk %}" class="mt">
+    {% csrf_token %}
+    <button class="btn good" {% if not balanced %}disabled title="Debits must equal credits"{% endif %}>Post entry</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

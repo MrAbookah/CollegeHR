@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Pledges — CollegeDB{% endblock %}
+{% block content %}
+{% if forbidden %}{% include "partials/forbidden.html" %}{% else %}
+<h1>Pledges</h1>
+<div class="card">
+  <table>
+    <tr><th>Donor</th><th>Designation</th><th class="num">Pledged</th><th class="num">Fulfilled</th><th>Frequency</th><th>Status</th></tr>
+    {% for p in pledges %}
+    <tr>
+      <td><a href="{% url 'donor_detail' p.person.pk %}">{{ p.person.display_name }}</a></td>
+      <td>{{ p.designation.name }}</td>
+      <td class="num">{{ p.total_amount|money }}</td>
+      <td class="num">{{ p.fulfilled_amount|money }}</td>
+      <td class="small">{{ p.get_frequency_display }}</td>
+      <td><span class="badge {{ p.status|status_class }}">{{ p.get_status_display }}</span></td>
+    </tr>
+    {% empty %}<tr><td colspan="6" class="empty">No pledges.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endif %}
+{% endblock %}

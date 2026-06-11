@@ -1,0 +1,55 @@
+{% load college %}
+<div class="card">
+  <h3>Programs</h3>
+  <table>
+    <tr><th>Program</th><th>Catalog</th><th>Status</th><th>Advisor</th></tr>
+    {% for sp in student_programs %}
+    <tr>
+      <td>{{ sp.program }}</td><td>{{ sp.catalog_year }}</td>
+      <td><span class="badge {{ sp.status|status_class }}">{{ sp.get_status_display }}</span></td>
+      <td>{{ sp.advisor.display_name|default:"—" }}</td>
+    </tr>
+    {% empty %}<tr><td colspan="4" class="empty">No declared program.</td></tr>{% endfor %}
+  </table>
+  <p class="small mt">
+    Cumulative GPA: <strong>{{ gpa|default:"—" }}</strong>
+    · <a href="{% url 'transcript' person.pk %}">Transcript</a>
+    {% if can_register %} · <a class="btn small" href="{% url 'registration' person.pk %}">Register / add-drop</a>{% endif %}
+  </p>
+</div>
+
+<div class="card">
+  <h3>Enrollments</h3>
+  <table>
+    <tr><th>Term</th><th>Course</th><th>Status</th><th>Grade</th></tr>
+    {% for e in enrollments|slice:":15" %}
+    <tr>
+      <td>{{ e.section.term.code }}</td>
+      <td>{{ e.section.course.code }} — {{ e.section.course.title|truncatechars:45 }}
+        {% with n=e|pending_crs %}{% if n %}<span class="badge badge-warn">change pending REG approval</span>{% endif %}{% endwith %}</td>
+      <td><span class="badge {{ e.status|status_class }}">{{ e.get_status_display }}</span></td>
+      <td>{{ e.grade|default:"—" }}</td>
+    </tr>
+    {% empty %}<tr><td colspan="4" class="empty">No enrollments.</td></tr>{% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h3>Graduation</h3>
+  {% for app in grad_apps %}
+    <p class="small"><a href="{% url 'graduation_detail' app.pk %}">{{ app.term.name }} — {{ app.student_program.program.name }}</a>
+      <span class="badge {{ app.status|status_class }}">{{ app.get_status_display }}</span></p>
+  {% empty %}<p class="empty">No graduation application.</p>{% endfor %}
+  {% if can_register and student_programs %}
+  <form method="post" action="{% url 'graduation_apply' person.pk %}" class="row">
+    {% csrf_token %}
+    <p><label>Program</label>
+      <select name="student_program">
+        {% for sp in student_programs %}{% if sp.status == "ACTIVE" %}<option value="{{ sp.pk }}">{{ sp.program.code }}</option>{% endif %}{% endfor %}
+      </select></p>
+    <p><label>Conferral term</label>
+      <select name="term">{% for t in terms %}<option value="{{ t.pk }}">{{ t.name }}</option>{% endfor %}</select></p>
+    <p><button class="btn small">Apply for graduation</button></p>
+  </form>
+  {% endif %}
+</div>

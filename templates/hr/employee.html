@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Employee file — {{ person.display_name }} — CollegeDB{% endblock %}
+{% block content %}
+<h1>Employee file — <a href="{% url 'person_detail' person.pk %}">{{ person.display_name }}</a></h1>
+{% if not salary_visible %}
+<div class="banner ferpa">Salary figures are restricted to HR — you see ••• instead. The reveal
+  itself is audit-logged for HR users.</div>
+{% endif %}
+<div class="card">
+  <h2>Employment records</h2>
+  <table>
+    <tr><th>Position</th><th>Dept</th><th>GL funding</th><th>Status</th><th>Hired</th><th class="num">Salary</th><th>Supervisor</th><th></th></tr>
+    {% for r in records %}
+    <tr>
+      <td>{{ r.position.title }} <span class="muted small">{{ r.position.position_number }} · {{ r.get_pay_basis_display }}</span></td>
+      <td>{{ r.position.department.code }}</td>
+      <td class="small">{{ r.position.gl_account|default:"—" }}</td>
+      <td><span class="badge {{ r.status|status_class }}">{{ r.get_status_display }}</span></td>
+      <td>{{ r.hire_date }}</td>
+      <td class="num">{% if salary_visible %}{{ r.salary|money }}{% else %}•••{% endif %}</td>
+      <td class="small">{{ r.supervisor.display_name|default:"—" }}</td>
+      <td>{% if can_edit %}<a class="btn small secondary" href="{% url 'employment_edit' r.pk %}">Edit</a>{% endif %}</td>
+    </tr>
+    {% empty %}<tr><td colspan="8" class="empty">No employment records.</td></tr>{% endfor %}
+  </table>
+</div>
+<div class="card">
+  <h2>Paychecks</h2>
+  <table>
+    <tr><th>Pay date</th><th class="num">Gross</th><th class="num">Taxes</th><th class="num">Net</th></tr>
+    {% for p in paychecks %}
+    <tr>
+      <td>{{ p.payroll_run.pay_date }}</td>
+      <td class="num">{% if salary_visible %}{{ p.gross|money }}{% else %}•••{% endif %}</td>
+      <td class="num">{% if salary_visible %}{{ p.taxes|money }}{% else %}•••{% endif %}</td>
+      <td class="num">{% if salary_visible %}{{ p.net|money }}{% else %}•••{% endif %}</td>
+    </tr>
+    {% empty %}<tr><td colspan="4" class="empty">No paychecks.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}

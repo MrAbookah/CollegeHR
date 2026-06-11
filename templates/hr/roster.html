@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Employee roster — CollegeDB{% endblock %}
+{% block content %}
+{% if forbidden %}{% include "partials/forbidden.html" %}{% else %}
+<h1>Employee roster</h1>
+<div class="card">
+  <table>
+    <tr><th>Employee</th><th>Position</th><th>Department</th><th>GL funding</th><th>Status</th><th></th></tr>
+    {% for r in records %}
+    <tr>
+      <td>{{ r.person.display_name }} <span class="muted small">{{ r.person.college_id }}</span></td>
+      <td>{{ r.position.title }}</td>
+      <td>{{ r.position.department.code }}</td>
+      <td class="small">{{ r.position.gl_account|default:"—" }}</td>
+      <td><span class="badge {{ r.status|status_class }}">{{ r.get_status_display }}</span></td>
+      <td><a class="btn small secondary" href="{% url 'hr_employee' r.person.pk %}">File</a></td>
+    </tr>
+    {% empty %}<tr><td colspan="6" class="empty">No active employees.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}New person — CollegeDB{% endblock %}
+{% block content %}
+<h1>Create a person</h1>
+<div class="card">
+  <p class="muted small">One record per human, forever. If they were ever a student, employee,
+     applicant, or donor here — even decades ago — use their existing record instead.</p>
+  <form method="post" action="{% url 'person_create' %}">
+    {% csrf_token %}
+    <input type="hidden" name="search_token" value="{{ search_token }}">
+    {{ form.as_p }}
+    <button class="btn">Create person</button>
+    <a class="btn secondary" href="{% url 'person_search' %}">Back to search</a>
+  </form>
+</div>
+{% endblock %}

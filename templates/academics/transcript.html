@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Transcript {{ person.display_name }} — CollegeDB{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Unofficial transcript</h1>
+  <p>{{ person.full_legal_name }} · {{ person.college_id }}<br>
+    {% for sp in programs %}{{ sp.program }} ({{ sp.get_status_display }}){% if not forloop.last %} · {% endif %}{% endfor %}
+  </p>
+  {% for block in terms %}
+  <h2>{{ block.term.name }}</h2>
+  <table>
+    <tr><th>Course</th><th>Title</th><th class="num">Credits</th><th>Grade</th></tr>
+    {% for e in block.enrollments %}
+    <tr>
+      <td>{{ e.section.course.code }}</td>
+      <td>{{ e.section.course.title }}</td>
+      <td class="num">{{ e.section.course.credits }}</td>
+      <td>{{ e.grade|default:"IP" }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p class="small muted">Term GPA: {{ block.gpa|default:"—" }}</p>
+  {% endfor %}
+  <hr>
+  <p><strong>Cumulative GPA: {{ cumulative_gpa|default:"—" }}</strong> · Credits earned: {{ total_credits }}</p>
+  <p class="no-print"><button class="btn secondary" onclick="window.print()">Print</button></p>
+</div>
+{% endblock %}

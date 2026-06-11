@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}No access — CollegeDB{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>No access</h1>
+  <p>Your department doesn't have access to this information. If you need it for your work,
+     send a referral task to the owning office — that's the front door.</p>
+  <a class="btn secondary" href="{% url 'dashboard' %}">Back to dashboard</a>
+</div>
+{% endblock %}

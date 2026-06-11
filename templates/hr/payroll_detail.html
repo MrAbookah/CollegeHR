@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Payroll detail — CollegeDB{% endblock %}
+{% block content %}
+{% if forbidden %}{% include "partials/forbidden.html" %}{% else %}
+<h1>Payroll {{ run.period_start }} – {{ run.period_end }}
+  <span class="badge badge-muted">{{ run.get_status_display }}</span></h1>
+<div class="card">
+  <table>
+    <tr><th>Employee</th><th class="num">Gross</th><th class="num">Taxes</th><th class="num">Net</th></tr>
+    {% for p in paychecks %}
+    <tr>
+      <td>{{ p.person.display_name }}</td>
+      <td class="num">{% if salary_visible %}{{ p.gross|money }}{% else %}•••{% endif %}</td>
+      <td class="num">{% if salary_visible %}{{ p.taxes|money }}{% else %}•••{% endif %}</td>
+      <td class="num">{% if salary_visible %}{{ p.net|money }}{% else %}•••{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+{% endblock %}

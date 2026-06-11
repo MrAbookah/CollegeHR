@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Graduation — {{ app.person.display_name }} — CollegeDB{% endblock %}
+{% block content %}
+<h1>Graduation — <a href="{% url 'person_detail' app.person.pk %}">{{ app.person.display_name }}</a>
+  <span class="badge {{ app.status|status_class }}">{{ app.get_status_display }}</span></h1>
+<p class="muted">{{ app.student_program.program.name }} · conferral {{ app.term.name }} · applied {{ app.submitted_at|date:"Y-m-d" }}</p>
+
+<div class="grid cols-2">
+  <div class="card">
+    <h2>Clearance items</h2>
+    <table>
+      <tr><th>Office</th><th>Item</th><th>Status</th><th>By</th></tr>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.department.code }}</td>
+        <td>{{ item.item }}{% if item.note %}<br><span class="muted small">{{ item.note }}</span>{% endif %}</td>
+        <td><span class="badge {{ item.status|status_class }}">{{ item.get_status_display }}</span></td>
+        <td class="small">{{ item.cleared_by.username|default:"—" }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    {% if actionable_items %}
+    <h3>Your department's pending items</h3>
+    {% for item in actionable_items %}
+    <form method="post" action="{% url 'clearance_action' app.pk item.pk %}" class="row mt">
+      {% csrf_token %}
+      <p style="flex:1"><label>{{ item.department.code }}: {{ item.item }}</label>
+        <input type="text" name="note" placeholder="note (optional)"></p>
+      <p><button class="btn good" name="verdict" value="clear">Clear</button>
+         <button class="btn danger" name="verdict" value="flag">Flag</button></p>
+    </form>
+    {% endfor %}
+    {% endif %}
+
+    {% if can_award %}
+    <form method="post" action="{% url 'award_degree' app.pk %}" class="mt"
+          data-confirm="Award the degree? This makes {{ app.person.display_name }} an alum.">
+      {% csrf_token %}
+      <button class="btn good">Award degree 🎓</button>
+    </form>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Degree audit <span class="badge {% if audit_result.satisfied %}badge-good">requirements met{% else %}badge-warn">in progress{% endif %}</span></h2>
+    <table>
+      <tr><th>Category</th><th class="num">Earned</th><th class="num">Required</th><th></th></tr>
+      {% for c in audit_result.categories %}
+      <tr>
+        <td>{{ c.category }}<br><span class="muted small">{{ c.courses|join:", "|truncatechars:60 }}</span></td>
+        <td class="num">{{ c.earned }}</td>
+        <td class="num">{{ c.required }}</td>
+        <td>{% if c.satisfied %}<span class="badge badge-good">✓</span>{% else %}<span class="badge badge-warn">…</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    <p class="small mt"><strong>Total: {{ audit_result.total_earned }} / {{ audit_result.total_required }} credits</strong></p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load college %}
+{% block title %}Document — CollegeDB{% endblock %}
+{% block content %}
+<h1>{{ doc.doc_type.name }} — <a href="{% url 'person_detail' doc.person.pk %}">{{ doc.person.display_name }}</a>
+  <span class="badge {{ doc.status|status_class }}">{{ doc.get_status_display }}</span></h1>
+<div class="card">
+  <dl class="kv">
+    <dt>File</dt><dd><a href="{% url 'document_file' doc.pk %}">{{ doc.original_filename }}</a>
+      <span class="muted small">({{ doc.size }} bytes — opening it is audit-logged)</span></dd>
+    <dt>Owning office</dt><dd>{{ doc.doc_type.owning_department.name }}</dd>
+    <dt>Retention</dt><dd>{{ doc.doc_type.retention_note|default:"—" }}</dd>
+    <dt>Uploaded</dt><dd>{{ doc.created_at }} by {{ doc.uploaded_by.username|default:"—" }} ({{ doc.get_source_display }})</dd>
+    {% if doc.reviewed_by %}<dt>Reviewed</dt><dd>{{ doc.reviewed_at }} by {{ doc.reviewed_by.username }} — {{ doc.review_note|default:"no note" }}</dd>{% endif %}
+  </dl>
+  {% if can_review %}
+  <form method="post" action="{% url 'document_review' doc.pk %}" class="mt">
+    {% csrf_token %}
+    <p><label>Review note</label><input type="text" name="note" placeholder="optional"></p>
+    <button class="btn good" name="verdict" value="verify">Verify</button>
+    <button class="btn danger" name="verdict" value="reject">Reject</button>
+  </form>
+  <p class="muted small mt">Verifying auto-completes any admissions checklist item waiting on this
+    document type.</p>
+  {% endif %}
+</div>
+{% endblock %}

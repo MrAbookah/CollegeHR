@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Course catalog — CollegeDB{% endblock %}
+{% block content %}
+<h1>Course catalog</h1>
+{% for subject in subjects %}
+<div class="card">
+  <h2>{{ subject.code }} — {{ subject.name }}</h2>
+  <table>
+    <tr><th>Course</th><th>Title</th><th class="num">Credits</th></tr>
+    {% for course in subject.courses.all %}
+    <tr>
+      <td><a href="{% url 'course_detail' course.pk %}">{{ course.code }}</a></td>
+      <td>{{ course.title }}</td>
+      <td class="num">{{ course.credits }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% empty %}<p class="empty">No courses defined yet.</p>{% endfor %}
+{% endblock %}
