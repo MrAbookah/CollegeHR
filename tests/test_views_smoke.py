@@ -142,6 +142,26 @@ def test_notification_bell_partial(client, rita):
     assert resp.status_code == 200
 
 
+def test_bell_shows_items_on_first_render(client, rita):
+    """The bell dropdown must agree with the notification center immediately,
+    not only after the first background poll."""
+    from workflow.services import notify_user
+
+    n = notify_user(rita, "Sam Lee fully cleared for graduation", url="/tasks/")
+    client.force_login(rita)
+    resp = client.get("/")
+    assert b"Sam Lee fully cleared for graduation" in resp.content
+    assert b'class="count">1</span>' in resp.content
+
+    # Clicking the item marks it read and follows its link.
+    resp = client.get(f"/notifications/{n.pk}/go/")
+    assert resp.status_code == 302 and resp.url == "/tasks/"
+    n.refresh_from_db()
+    assert n.read_at is not None
+    resp = client.get("/")
+    assert b'class="count"' not in resp.content  # badge gone
+
+
 def test_document_open_logs_view(client, ana, student, ref):
     from django.core.files.base import ContentFile
 
