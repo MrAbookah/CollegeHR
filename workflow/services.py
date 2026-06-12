@@ -230,17 +230,19 @@ def build_create_changes(instance):
 
 
 def submit_change_request(*, actor, person, domain_code, action, model_label,
-                          target=None, changes, summary=""):
+                          target=None, changes, summary="", applied=None):
     """Record a proposed cross-domain change and open a verification task in
     the owning department's queue. Caller decides (per the domain policy)
-    whether the underlying save already happened."""
+    whether the underlying save already happened; pass `applied` explicitly
+    when held fields forced a stricter route than the domain default."""
     domain = DataDomain.objects.select_related("owner_department").get(code=domain_code)
     submitted_dept = None
     membership_codes = permissions.user_dept_codes(actor)
     if membership_codes:
         submitted_dept = Department.objects.filter(code__in=membership_codes).first()
 
-    applied = domain.change_policy == DataDomain.APPLY_THEN_VERIFY
+    if applied is None:
+        applied = domain.change_policy == DataDomain.APPLY_THEN_VERIFY
 
     target_kwargs = {}
     if target is not None:
@@ -259,6 +261,16 @@ def submit_change_request(*, actor, person, domain_code, action, model_label,
     model_name = apps.get_model(model_label)._meta.verbose_name
     what = summary or f"{cr.get_action_display()} {model_name}"
     flavor = "already applied — needs verification" if applied else "awaiting approval"
+    description = (
+        f"{actor.get_full_name() or actor.username} "
+        f"({submitted_dept.name if submitted_dept else 'no department'}) submitted a change "
+        f"({flavor}). Review the field-by-field diff and approve or reject."
+    )
+    held = permissions.held_fields_for(model_label, changes.keys())
+    if held:
+        note = permissions.HELD_FIELD_NOTES.get(model_label, "")
+        if note:
+            description += f"\n\n⚠ {note}"
     create_task(
         title=f"Verify: {what} for {person.display_name}",
         task_type=Task.VERIFY_CHANGE,
@@ -266,11 +278,7 @@ def submit_change_request(*, actor, person, domain_code, action, model_label,
         person=person,
         originating_department=submitted_dept,
         related=cr,
-        description=(
-            f"{actor.get_full_name() or actor.username} "
-            f"({submitted_dept.name if submitted_dept else 'no department'}) submitted a change "
-            f"({flavor}). Review the field-by-field diff and approve or reject."
-        ),
+        description=description,
         created_by=actor,
     )
     return cr

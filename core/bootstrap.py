@@ -52,6 +52,7 @@ DOCUMENT_TYPES = [
     ("TAX_FORM", "Tax form", "FA", "Retain 3 years after aid year"),
     ("I9", "Form I-9", "HR", "Retain 3 years after hire or 1 year after separation"),
     ("GIFT_AGREEMENT", "Gift agreement", "ADV", "Permanent"),
+    ("NAME_CHANGE", "Legal name-change documentation", "REG", "Permanent"),
 ]
 
 # (code, description, default amount, GL account number)

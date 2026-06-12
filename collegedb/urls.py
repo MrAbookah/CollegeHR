@@ -23,4 +23,5 @@ urlpatterns = [
     path("advancement/", include("advancement.urls")),
     path("documents/", include("documents.urls")),
     path("reports/", core_views.reports, name="reports"),
+    path("sops/", core_views.sops, name="sops"),
 ]

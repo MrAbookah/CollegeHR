@@ -35,6 +35,17 @@ def test_person_tab_logs_ferpa_view(client, rita, student):
     assert not AuditLog.objects.filter(action="VIEW").exists()
 
 
+@pytest.mark.parametrize("tab", ["overview", "academics", "admissions", "account",
+                                 "finaid", "employment", "advancement", "documents",
+                                 "activity"])
+def test_every_tab_renders(client, hank, student, tab):
+    # hank (HR) can read EMPLOYMENT; unrestricted tabs render for any staff;
+    # restricted ones he can't read return the friendly no-access partial.
+    client.force_login(hank)
+    resp = client.get(f"/people/{student.pk}/tab/{tab}/")
+    assert resp.status_code == 200
+
+
 def test_restricted_tab_blocked_for_wrong_department(client, ana, student):
     client.force_login(ana)  # Admissions can't read student accounts
     resp = client.get(f"/people/{student.pk}/tab/account/")

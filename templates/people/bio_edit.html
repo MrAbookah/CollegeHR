@@ -6,6 +6,10 @@
   <p class="muted small">Biographic data is owned by the <strong>Registrar</strong>. If you're in another
   office your save still goes live immediately — the person at your desk sees it fixed —
   but the Registrar gets a verification task and can revert it. That's the guardrail.</p>
+  <p class="muted small"><strong>Exception — legal name fields</strong> (first/middle/last/suffix):
+  these never change until the Registrar validates documentation (marriage certificate, court
+  order). Saving a name change notifies them to follow up with the person; the record keeps the
+  current name until they approve. See <a href="{% url 'sops' %}#sop-name-change">SOP 1</a>.</p>
   <form method="post">
     {% csrf_token %}
     {{ form.as_p }}

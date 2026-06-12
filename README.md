@@ -101,9 +101,18 @@ Django admin (reference data, audit browser, person merge):
    (Registrar-owned, apply-then-verify): it saves instantly and flashes
    "sent to REG to verify". As `rita`, the bell shows the task; open it, see
    the old→new diff, Approve — or Reject and watch it revert.
-4. **Held changes** — as `bob`, try a grade change: nothing applies until
-   `rita` approves (and a conflicting later edit flips it to CONFLICT
-   instead of clobbering).
+4. **Held changes: the marriage name change (SOP 1)** — as `advancement.ava`,
+   open *Morgan Whitfield* (alumni donor, in the office after getting
+   married) → Edit bio/contact → change her last name. The record does
+   **not** change: legal-name fields are always held, and the Registrar is
+   notified automatically with instructions to collect documentation. Sign
+   out, sign in as `rita`: the bell shows the task, the diff shows old→new
+   with documentation guidance; upload the marriage certificate to Morgan's
+   Documents, then Approve — the name updates everywhere, and the Activity
+   tab keeps the whole paper trail (old name, requester, approver, document).
+   Same mechanics for `bob` attempting a grade change: held until REG
+   approves, and a conflicting later edit flips to CONFLICT instead of
+   clobbering. The full procedure lives at **/sops/** in the app.
 5. **Holds that release themselves** — as `rita`, register *Sam Lee*:
    blocked, banner names the $1,240 bursar hold. As `bob`, post a $1,240
    payment: the hold auto-releases (audited as system), Sam's advisor gets a

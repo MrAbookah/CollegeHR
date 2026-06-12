@@ -811,6 +811,26 @@ class Command(BaseCommand):
 
         ava = self.users["advancement.ava"]
         designations = list(Designation.objects.all())
+
+        # Morgan Whitfield: the alumni donor who walks into Advancement after
+        # getting married — SOP 1's demo persona. Reliable giving history so
+        # Ava has a reason to have her at the desk.
+        from advancement.models import AlumniInfo
+
+        self.morgan = self._person("Morgan", "Whitfield",
+                                   email="morgan.whitfield@example.com",
+                                   dob=datetime.date(1990, 4, 17), banner="@00009876")
+        self._address(self.morgan)
+        self._affiliate(self.morgan, "ALUMNI", start=datetime.date(2012, 5, 19))
+        AlumniInfo.objects.create(
+            person=self.morgan, class_year=2012, degree_received="B.A. English",
+            employer="Riverbend Publishing", job_title="Senior Editor",
+        )
+        scholar = Designation.objects.get(code="SCHOLAR")
+        for year, amount in [(2022, 250), (2023, 250), (2024, 500), (2025, 500), (2026, 1000)]:
+            record_gift(self.morgan, scholar, Decimal(amount), method="CARD",
+                        gift_date=datetime.date(year, 5, 19), actor=ava)
+
         donors = self.rng.sample(self.alumni, 22) + [self.jordan, self.staff_people["registrar.ray"]]
 
         for person in donors:
@@ -851,7 +871,9 @@ class Command(BaseCommand):
             self.stdout.write(f"  {username:<18} {first} {last:<10} — {dept}")
         self.stdout.write(
             "\nDemo personas:\n"
-            "  Jordan Rivers — student + employee + donor on one record\n"
-            "  Sam Lee       — graduating senior blocked by a $1,240 bursar hold + library fine\n"
-            "  Avery Cole    — DEPOSITED applicant, one click from enrollment\n"
-            "  Casey Fox     — student whose address Bursar Bob fixes at the counter\n")
+            "  Jordan Rivers    — student + employee + donor on one record\n"
+            "  Sam Lee          — graduating senior blocked by a $1,240 bursar hold + library fine\n"
+            "  Avery Cole      — DEPOSITED applicant, one click from enrollment\n"
+            "  Casey Fox       — student whose address Bursar Bob fixes at the counter\n"
+            "  Morgan Whitfield — alumni donor at the Advancement desk for a marriage\n"
+            "                     name change (SOP 1: held until REG validates documents)\n")

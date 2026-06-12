@@ -63,8 +63,14 @@ class GovernedFormMixin:
                 return HttpResponseRedirect(self.get_success_url())
 
         person = self.get_governed_person(form)
+        if person.pk:
+            # The form mutated the in-memory instance; the task/notification
+            # must show the person as they currently are on the record.
+            person = type(person)._default_manager.get(pk=person.pk)
+        model_label = form.instance._meta.label_lower
         policy = permissions.domain_policy(self.data_domain)
-        applied = policy == DataDomain.APPLY_THEN_VERIFY
+        held = permissions.held_fields_for(model_label, changes.keys())
+        applied = policy == DataDomain.APPLY_THEN_VERIFY and not held
         if applied:
             self.object = form.save()  # live immediately; owner verifies after
 
@@ -73,13 +79,21 @@ class GovernedFormMixin:
             person=person,
             domain_code=self.data_domain,
             action=action,
-            model_label=form.instance._meta.label_lower,
+            model_label=model_label,
             target=form.instance if (applied or not is_create) else None,
             changes=changes,
+            applied=applied,
         )
 
         owner = permissions.domain_owner_code(self.data_domain) or "the owning department"
-        if applied:
+        if held:
+            messages.warning(
+                self.request,
+                f"Submitted — but {', '.join(sorted(held))} cannot change until {owner} "
+                "validates supporting documentation. They've been notified to follow up; "
+                "the record keeps its current values for now.",
+            )
+        elif applied:
             messages.success(
                 self.request,
                 f"Saved — and sent to {owner} to verify, since they own this data.",

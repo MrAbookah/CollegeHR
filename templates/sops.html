@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}SOPs — CollegeDB{% endblock %}
+{% block content %}
+<h1>Standard operating procedures</h1>
+<p class="muted small">How cross-office work moves through CollegeDB. The system enforces the
+   guardrails; these are the human steps around them.</p>
+
+<div class="card" id="sop-name-change">
+  <h2>SOP 1 — Legal name change at any office (marriage, court order)</h2>
+  <p class="small muted">Example: an alumni donor visits Advancement after getting married.
+     Any office can take the request; the <strong>Registrar</strong> owns legal names and must
+     validate documentation before anything changes.</p>
+  <ol class="small">
+    <li>Verify the person's identity and pull up their record (global search — never create a duplicate).</li>
+    <li>Open <strong>Edit bio/contact</strong> and enter the new legal name. Save.</li>
+    <li>The system does <em>not</em> change the name yet. It records the request as a pending
+        change, flags the profile, and automatically opens a verification task in the
+        <strong>Registrar's queue</strong> with documentation instructions — they are notified instantly.</li>
+    <li>Tell the person: <em>"The Registrar's office will contact you to collect your marriage
+        certificate or court order — the name updates the moment they validate it."</em></li>
+    <li><strong>Registrar:</strong> contact the person, collect the documentation, upload it to their
+        record as <em>Legal name-change documentation</em>, then open the task and <strong>Approve</strong>.
+        The name updates everywhere at once.</li>
+    <li>The old name, the new name, who requested it, who approved it, and the document all stay
+        on the record permanently (Activity tab) — the paper trail FERPA expects.</li>
+  </ol>
+  <p class="small"><strong>Note:</strong> a <em>preferred name</em> is not a legal name — it applies
+     immediately like other contact info, with after-the-fact Registrar verification.</p>
+</div>
+
+<div class="card" id="sop-front-desk">
+  <h2>SOP 2 — Contact-info fix at the front desk</h2>
+  <ol class="small">
+    <li>The person is at your counter; fix the address/phone/email on their record yourself.</li>
+    <li>The change applies <strong>immediately</strong> (they leave with it fixed) and the Registrar
+        gets a verification task. If they reject it, the system reverts the value automatically.</li>
+  </ol>
+</div>
+
+<div class="card" id="sop-referral">
+  <h2>SOP 3 — The person needs another office</h2>
+  <ol class="small">
+    <li>Don't send them across campus. From their record, click <strong>Refer to another office</strong>.</li>
+    <li>Pick the department, describe the need, set a due date. That office's whole team is notified;
+        whoever claims it owns it; the conversation lives on the task, not in email.</li>
+  </ol>
+</div>
+
+<div class="card" id="sop-documents">
+  <h2>SOP 4 — Paper in hand</h2>
+  <ol class="small">
+    <li>Scan/upload it to the person's record the moment you receive it, with the right document type.</li>
+    <li>It routes to the owning office's review queue automatically; verification auto-completes any
+        admissions checklist item waiting on it. Never keep documents in a desk drawer or shared drive.</li>
+  </ol>
+</div>
+{% endblock %}

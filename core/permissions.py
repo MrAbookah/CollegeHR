@@ -26,6 +26,29 @@ SENSITIVE_FIELDS = {
     "core.person": {"ssn_last4": {"REG", "HR", "FA"}},
 }
 
+# Fields that are NEVER applied ahead of owner verification, even inside an
+# APPLY_THEN_VERIFY domain. A legal name lives on transcripts, diplomas, and
+# federal aid records — it changes only after the owning office validates
+# documentation. (Contact info at the front desk stays instant.)
+HELD_FIELDS = {
+    "core.person": {"first_name", "last_name", "middle_name", "suffix"},
+}
+
+# Guidance attached to the verification task when held fields are touched.
+HELD_FIELD_NOTES = {
+    "core.person": (
+        "Legal name change: contact the person, collect supporting "
+        "documentation (e.g., marriage certificate or court order), upload it "
+        "to their Documents, and only then approve. The record keeps the old "
+        "name until approval; the full history stays in the audit trail."
+    ),
+}
+
+
+def held_fields_for(model_label, changed_fields):
+    """The subset of changed fields that must wait for owner approval."""
+    return HELD_FIELDS.get(model_label, set()) & set(changed_fields)
+
 
 @lru_cache(maxsize=None)
 def _domain_owner(domain_code):

@@ -112,6 +112,70 @@ def test_review_guards(rita, bob, fay, student):
         review_change(cr, rita, approve=True)  # already resolved
 
 
+def _bio_post(client, user, person, **overrides):
+    data = {
+        "first_name": person.first_name, "last_name": person.last_name,
+        "middle_name": "", "preferred_name": "", "suffix": "",
+        "date_of_birth": person.date_of_birth or "", "pronouns": "",
+        "primary_email": person.primary_email, "primary_phone": person.primary_phone,
+    }
+    data.update(overrides)
+    client.force_login(user)
+    return client.post(reverse("person_bio_edit", args=[person.pk]), data)
+
+
+def test_legal_name_change_held_until_registrar_validates(client, rita, student, ref):
+    """SOP 1: Advancement takes a marriage name change at the desk. The name
+    must NOT change until REG validates documentation — but REG is notified
+    automatically with follow-up instructions."""
+    from tests.conftest import make_staff
+
+    ava = make_staff("ava", "ADV")
+    resp = _bio_post(client, ava, student, last_name="Dent-Brennan")
+    assert resp.status_code == 302
+
+    student.refresh_from_db()
+    assert student.last_name == "Dent"  # held: nothing applied yet
+
+    cr = ChangeRequest.objects.get()
+    assert cr.applied_immediately is False and cr.status == "PENDING"
+    task = Task.objects.get(task_type=Task.VERIFY_CHANGE)
+    assert task.assigned_department.code == "REG"
+    assert "marriage certificate" in task.description
+    assert Notification.objects.filter(recipient=rita).exists()
+
+    # Registrar collects the documentation, then approves: name goes live.
+    review_change(cr, rita, approve=True, note="Marriage certificate on file")
+    student.refresh_from_db()
+    assert student.last_name == "Dent-Brennan"
+    # The paper trail survives on the record.
+    from core.models import AuditLog
+
+    assert AuditLog.objects.filter(action="VERIFY", person=student).exists()
+
+
+def test_mixed_name_and_contact_edit_is_fully_held(client, rita, ref, student):
+    from tests.conftest import make_staff
+
+    ava = make_staff("ava2", "ADV")
+    _bio_post(client, ava, student, last_name="Dent-Brennan",
+              primary_phone="(555) 777-1111")
+    student.refresh_from_db()
+    # The name field forces the WHOLE edit to wait — no partial application.
+    assert student.last_name == "Dent" and student.primary_phone != "(555) 777-1111"
+    assert ChangeRequest.objects.get().applied_immediately is False
+
+
+def test_preferred_name_still_applies_instantly(client, rita, ref, student):
+    from tests.conftest import make_staff
+
+    ava = make_staff("ava3", "ADV")
+    _bio_post(client, ava, student, preferred_name="Dee")
+    student.refresh_from_db()
+    assert student.preferred_name == "Dee"  # not a legal-name field
+    assert ChangeRequest.objects.get().applied_immediately is True
+
+
 def test_create_action_applies_on_approve(rita, bob, student, ref):
     from decimal import Decimal
 

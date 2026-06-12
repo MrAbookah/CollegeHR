@@ -272,6 +272,14 @@ class EmergencyContactCreateView(AddressCreateView):
 
 
 @login_required
+def sops(request):
+    """Standard operating procedures — the human half of the guardrails."""
+    if not permissions.is_staff_member(request.user):
+        return render(request, "registration/no_access.html", status=403)
+    return render(request, "sops.html")
+
+
+@login_required
 def reports(request):
     """Four canned, shared-definition reports — the antidote to every
     department keeping its own conflicting spreadsheet."""
