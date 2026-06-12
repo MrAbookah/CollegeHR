@@ -179,7 +179,7 @@ yet — the schema is shaped so they're cheap.
 
 ## Copyright
 
-**© 2026 MrAbookah. All rights reserved.** This repository is public for
+**© 2026 Ryan Beck "MrAbookah". All rights reserved.** This repository is public for
 portfolio evaluation only — no license is granted to use, copy, modify, or
 distribute this software. See [NOTICE](NOTICE). All seeded people, names,
 and records are fictional (Faker-generated); no real student, employee, or
