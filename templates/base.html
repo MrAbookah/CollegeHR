@@ -16,7 +16,7 @@
   </form>
   <span class="spacer"></span>
   <div id="bell-wrap" data-poll="{% url 'notification_bell' %}" data-poll-interval="45">
-    {% include "partials/bell.html" with unread=unread_count items=None %}
+    {% include "partials/bell.html" with unread=unread_count items=bell_items %}
   </div>
   <span class="who">{{ user.get_full_name|default:user.username }}</span>
   {% if user.is_superuser %}<a href="/admin/" class="who">Admin</a>{% endif %}
