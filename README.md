@@ -176,3 +176,11 @@ yet — the schema is shaped so they're cheap.
   is append-only at the application layer; enforce it in Postgres too.
 - Swap `MEDIA_ROOT` for object storage before real documents arrive.
 - SSO: add an OIDC/SAML backend, map the IdP subject to `User.sso_subject`.
+
+## Copyright
+
+**© 2026 MrAbookah. All rights reserved.** This repository is public for
+portfolio evaluation only — no license is granted to use, copy, modify, or
+distribute this software. See [NOTICE](NOTICE). All seeded people, names,
+and records are fictional (Faker-generated); no real student, employee, or
+donor data exists anywhere in this repository or its history.
