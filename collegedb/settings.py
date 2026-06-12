@@ -82,6 +82,7 @@ WSGI_APPLICATION = "collegedb.wsgi.application"
 # DB_FALLBACK_SQLITE=1 exists only so the app can boot on a machine without
 # Postgres; the dedup service degrades to icontains matching there.
 if env("DB_FALLBACK_SQLITE"):
+    (BASE_DIR / "var").mkdir(exist_ok=True)  # fresh clones don't have var/ yet
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
