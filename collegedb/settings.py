@@ -29,7 +29,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.postgres",
     "django.contrib.humanize",
     # CollegeDB apps
     "core",
@@ -43,6 +42,12 @@ INSTALLED_APPS = [
     "finance",
     "advancement",
 ]
+
+# django.contrib.postgres powers trigram duplicate-person search on PostgreSQL.
+# It imports psycopg at startup, so it must be left out on the SQLite fallback
+# (where dedup degrades to substring matching anyway).
+if not env("DB_FALLBACK_SQLITE"):
+    INSTALLED_APPS.insert(6, "django.contrib.postgres")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
